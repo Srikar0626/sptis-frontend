@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bus, Map as MapIcon, Users, Clock, Search, MapPin, AlertCircle, Info, ArrowRight, ArrowDownUp, ChevronLeft, RefreshCw, Navigation, UserMinus, Lightbulb, Activity, Home, List, Globe, CalendarDays, Route, MapPinOff, Coins, Zap, ShieldAlert, Sparkles, Menu, X, Code } from 'lucide-react';
+import { Bus, Map as MapIcon, Users, Clock, Search, MapPin, AlertCircle, Info, ArrowRight, ArrowDownUp, ChevronLeft, RefreshCw, UserMinus, Lightbulb, Activity, Home, List, Globe, CalendarDays, Route, MapPinOff, Coins, Zap, ShieldAlert, Sparkles, Code } from 'lucide-react';
 import { supabase } from './supabaseClient';
 
 // --- TRANSLATIONS DICTIONARY ---
@@ -603,7 +603,7 @@ function AutocompleteInput({ value, onChange, placeholder, options, label, icon,
           {filteredOptions.map(opt => (
             <li 
               key={opt} 
-              className="px-5 py-3 hover:bg-blue-50 hover:text-[#2563eb] cursor-pointer text-sm font-bold text-slate-700 transition-colors border-b border-slate-50 last:border-0 text-center md:text-left flex flex-col md:flex-row md:items-center gap-1"
+              className="px-5 py-3 hover:bg-blue-50 hover:text-[#0f4c81] cursor-pointer text-sm font-bold text-slate-700 transition-colors border-b border-slate-50 last:border-0 text-center md:text-left flex flex-col md:flex-row md:items-center gap-1"
               onClick={() => { onChange(opt); setSearchStr(tLoc(opt)); setIsOpen(false); }}
             >
               <span>{tLoc(opt)}</span>
@@ -650,11 +650,11 @@ function BusRouteMap({ bus, loadingText, tLoc }) {
     }).addTo(mapInstance.current);
 
     const latlngs = bus.stops.map(s => [s.lat, s.lng]);
-    window.L.polyline(latlngs, { color: '#3b82f6', weight: 4, opacity: 0.8 }).addTo(mapInstance.current);
+    window.L.polyline(latlngs, { color: '#2b7bbf', weight: 4, opacity: 0.8 }).addTo(mapInstance.current);
 
     bus.stops.forEach(s => {
       window.L.circleMarker([s.lat, s.lng], {
-        radius: 4, color: 'white', weight: 1, fillColor: '#2563eb', fillOpacity: 1
+        radius: 4, color: 'white', weight: 1, fillColor: '#0f4c81', fillOpacity: 1
       }).addTo(mapInstance.current);
     });
 
@@ -688,7 +688,7 @@ function BusRouteMap({ bus, loadingText, tLoc }) {
     }
 
     const iconHtml = `
-      <div style="background-color: #2563eb; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <div style="background-color: #0f4c81; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="15" cy="18" r="2"/></svg>
       </div>
     `;
@@ -710,7 +710,7 @@ function BusRouteMap({ bus, loadingText, tLoc }) {
       return (
         <div className="w-full h-full bg-slate-100 flex items-center justify-center">
             <div className="flex flex-col items-center gap-3 text-slate-500 font-bold">
-               <RefreshCw className="w-6 h-6 animate-spin text-[#2563eb]" />
+               <RefreshCw className="w-6 h-6 animate-spin text-[#0f4c81]" />
                {loadingText || "Loading Map Engine..."}
             </div>
         </div>
@@ -785,7 +785,7 @@ function MapComponent({ buses, tLoc, t, getTranslatedRouteDesc, translateBusType
         lng = currentStop.lng + (nextStop.lng - currentStop.lng) * progress;
       }
 
-      const markerColor = bus.bufferActive ? '#f59e0b' : '#2563eb';
+      const markerColor = bus.bufferActive ? '#f59e0b' : '#0f4c81';
       const iconHtml = `
         <div style="background-color: ${markerColor}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s;">
         </div>
@@ -813,7 +813,7 @@ function MapComponent({ buses, tLoc, t, getTranslatedRouteDesc, translateBusType
     });
   }, [buses, tLoc, t, getTranslatedRouteDesc, translateBusType]);
 
-  return <div ref={mapContainerRef} className="w-full h-[400px] sm:h-[500px] lg:h-[calc(100vh-140px)] rounded-xl shadow-sm border border-slate-200 relative z-0"></div>;
+  return <div ref={mapContainerRef} className="w-full h-[420px] sm:h-[520px] lg:h-[600px] rounded-2xl shadow-sm border border-slate-200 relative z-0"></div>;
 }
 
 // --- MAIN APPLICATION COMPONENT ---
@@ -1349,11 +1349,11 @@ export default function App() {
         }
     }
 
-    const gaugeColor = currentOccupancyPercent >= 100 ? '#e11d48' : currentOccupancyPercent > 80 ? '#f59e0b' : '#2563eb';
+    const gaugeColor = currentOccupancyPercent >= 100 ? '#e11d48' : currentOccupancyPercent > 80 ? '#f59e0b' : '#0f4c81';
 
     return (
-      <div className="max-w-md mx-auto md:max-w-4xl w-full bg-white md:rounded-xl shadow-md border border-slate-200 overflow-hidden flex flex-col h-[calc(100dvh-110px)] md:h-[800px] max-h-full md:max-h-[90vh]">
-        <div className="bg-[#2563eb] text-white p-4 flex items-center justify-between shrink-0">
+      <div className="max-w-md mx-auto md:max-w-4xl w-full bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden flex flex-col h-[calc(100dvh-190px)] lg:h-[calc(100dvh-210px)] lg:min-h-[560px]">
+        <div className="bg-[#0f4c81] text-white p-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={() => setAppView(previousView)} className="p-1 hover:bg-white/20 rounded-full transition">
               <ChevronLeft className="h-6 w-6" />
@@ -1368,25 +1368,25 @@ export default function App() {
 
         <div className="flex border-b border-slate-200 shrink-0 bg-white z-20 overflow-x-auto">
           <button 
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'info' ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
+            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'info' ? 'border-[#0f4c81] text-[#0f4c81]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
             onClick={() => setDetailsTab('info')}
           >
             {t('live_status')}
           </button>
           <button 
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'timeline' ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
+            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'timeline' ? 'border-[#0f4c81] text-[#0f4c81]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
             onClick={() => setDetailsTab('timeline')}
           >
             {t('route_timeline')}
           </button>
           <button 
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'map' ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
+            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'map' ? 'border-[#0f4c81] text-[#0f4c81]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
             onClick={() => setDetailsTab('map')}
           >
             {t('map_view')}
           </button>
           <button 
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'seats' ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
+            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold uppercase tracking-wide border-b-4 transition whitespace-nowrap ${detailsTab === 'seats' ? 'border-[#0f4c81] text-[#0f4c81]' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
             onClick={() => setDetailsTab('seats')}
           >
             {t('seat_status')}
@@ -1421,13 +1421,13 @@ export default function App() {
                             {isPast && <div className="w-6 h-6 rounded-full bg-slate-200 border-4 border-white shadow-sm"></div>}
                             {isCurrent && (
                                 <div className="relative flex items-center justify-center">
-                                <div className="absolute w-8 h-8 rounded-full bg-[#2563eb] opacity-30 animate-ping"></div>
-                                <div className="w-6 h-6 rounded-full bg-[#2563eb] border-4 border-white flex items-center justify-center text-white shadow-sm">
+                                <div className="absolute w-8 h-8 rounded-full bg-[#0f4c81] opacity-30 animate-ping"></div>
+                                <div className="w-6 h-6 rounded-full bg-[#0f4c81] border-4 border-white flex items-center justify-center text-white shadow-sm">
                                     <Bus className="h-3 w-3" />
                                 </div>
                                 </div>
                             )}
-                            {isFuture && <div className="w-6 h-6 rounded-full bg-white border-4 border-[#2563eb] shadow-sm"></div>}
+                            {isFuture && <div className="w-6 h-6 rounded-full bg-white border-4 border-[#0f4c81] shadow-sm"></div>}
                             </div>
 
                             <div className="flex-1 -mt-1 border-b border-slate-100 pb-4">
@@ -1522,7 +1522,7 @@ export default function App() {
                      </h3>
                      
                      <div className="space-y-4 text-[15px] flex-1">
-                        <p><span className="font-bold text-slate-800">{t('current_bus')}</span> <span className="text-[#004aad] font-bold ml-1">{liveSelectedBus.id}</span></p>
+                        <p><span className="font-bold text-slate-800">{t('current_bus')}</span> <span className="text-[#0f4c81] font-bold ml-1">{liveSelectedBus.id}</span></p>
                         <p><span className="font-bold text-slate-800">{t('start_time_label')}</span> <span className="ml-1">{liveSelectedBus.scheduledTime || "N/A"}</span></p>
                         <p><span className="font-bold text-slate-800">{t('simulation_time')}</span> <span className="ml-1">{getMockTime(liveSelectedBus.currentStopIndex)}</span></p>
                         <p><span className="font-bold text-slate-800">{t('current_stop')}</span> <span className="ml-1">{tLoc(liveSelectedBus.stops[liveSelectedBus.currentStopIndex].name)}</span></p>
@@ -1592,8 +1592,23 @@ export default function App() {
     bus.stops.some(stop => stop.name.toLowerCase().includes(searchQuery.toLowerCase()) || tLoc(stop.name).toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const navItems = [
+    { view: 'dashboard', Icon: Home, label: t('home') },
+    { view: 'planner', Icon: Search, label: t('planner') },
+    { view: 'multi_leg', Icon: Route, label: t('multi_planner') },
+    { view: 'routes', Icon: List, label: t('routes_dir') },
+    { view: 'schedule', Icon: CalendarDays, label: t('route_schedule') },
+  ];
+
+  const goToView = (view) => {
+    setAppView(view);
+    setSelectedBusId(null);
+    setRouteResults(null);
+    setTransferSuggestion(false);
+  };
+
   return (
-    <div className="flex h-[100dvh] w-full bg-slate-50 font-sans overflow-hidden">
+    <div className="flex flex-col h-[100dvh] w-full bg-[#f6f8fb] font-sans text-slate-800 overflow-hidden">
       
       <style>{`
         ::-webkit-scrollbar {
@@ -1628,189 +1643,154 @@ export default function App() {
         }
       `}</style>
 
-      {/* MOBILE SIDEBAR OVERLAY */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm" 
-          onClick={() => setIsSidebarOpen(false)} 
-        />
-      )}
-
-      {/* LEFT SIDEBAR / HAMBURGER MENU */}
-      <aside className={`fixed lg:static inset-y-0 left-0 bg-white border-r border-slate-200 flex flex-col shrink-0 z-50 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:w-0 lg:overflow-hidden lg:border-none'}`}>
-        <div className="bg-[#2563eb] text-white p-5 flex items-center justify-between shrink-0 shadow-sm min-w-[16rem]">
-          <div className="flex items-center gap-3">
-             <Bus className="h-6 w-6 text-white shrink-0" />
-             <div className="overflow-hidden">
-               <h1 className="text-xl font-bold tracking-tight leading-tight whitespace-nowrap">SPTIS</h1>
-               <p className="text-[9px] font-medium text-blue-100 uppercase tracking-widest mt-0.5 truncate whitespace-nowrap">Smart Simulation Interface</p>
-             </div>
+      {/* TOP HEADER */}
+      <header className="bg-[#0f4c81] text-white shrink-0 shadow-sm z-30">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 lg:h-[68px] flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="bg-white text-[#0f4c81] font-display font-bold text-base lg:text-lg tracking-tight px-2.5 py-1.5 rounded-lg shrink-0">SPTIS</div>
+            <div className="min-w-0">
+              <div className="font-display font-semibold text-lg lg:text-xl leading-tight truncate">Journey Planner</div>
+              <p className="hidden sm:block text-[11px] text-blue-100 leading-tight truncate">Smart Public Transport Information System</p>
+            </div>
           </div>
-          {/* Close Menu Button (Mobile Only) */}
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-1.5 bg-white/20 rounded-md hover:bg-white/30 transition-colors">
-            <X className="h-5 w-5 text-white" />
+
+          <div className="ml-auto flex items-center gap-2 sm:gap-3 shrink-0">
+            <span className="hidden sm:inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> {t('normal')}
+            </span>
+
+            {/* REGIONAL LANGUAGE SWITCHER */}
+            <label className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 transition-colors rounded-full pl-3 pr-2 py-1.5 cursor-pointer">
+              <Globe className="h-4 w-4 shrink-0" />
+              <select
+                aria-label="Language"
+                value={lang}
+                onChange={e => setLang(e.target.value)}
+                className="bg-transparent text-white text-sm font-semibold outline-none cursor-pointer"
+              >
+                <option className="text-slate-800" value="en">English</option>
+                <option className="text-slate-800" value="hi">हिंदी</option>
+                <option className="text-slate-800" value="te">తెలుగు</option>
+              </select>
+            </label>
+
+            {/* Developer's Corner (mobile) */}
+            <button
+              onClick={() => goToView('developers')}
+              aria-label="Developer's Corner"
+              className="lg:hidden p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              <Code className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* TOP NAVIGATION (DESKTOP) */}
+      <nav className="hidden lg:block bg-white border-b border-slate-200 shrink-0 z-20">
+        <div className="max-w-[1400px] mx-auto px-8 h-14 flex items-center gap-1">
+          {navItems.map(({ view, Icon, label }) => (
+            <button
+              key={view}
+              onClick={() => goToView(view)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${appView === view ? 'bg-blue-50 text-[#0f4c81]' : 'text-slate-600 hover:bg-slate-50 hover:text-[#0f4c81]'}`}
+            >
+              <Icon className="h-4 w-4" /> {label}
+            </button>
+          ))}
+
+          <button
+            onClick={() => goToView('developers')}
+            className={`ml-auto flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${appView === 'developers' ? 'bg-[#0f4c81] text-white border-[#0f4c81]' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`}
+          >
+            <Code className="h-4 w-4" /> Developer's Corner
           </button>
         </div>
+      </nav>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto min-w-[16rem]">
-          <button 
-            onClick={() => { setAppView('dashboard'); setSelectedBusId(null); setRouteResults(null); setTransferSuggestion(false); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
-            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-bold transition-all duration-200 group ${appView === 'dashboard' ? 'bg-[#2563eb] text-white shadow-md shadow-blue-500/20' : 'text-slate-600 hover:bg-blue-50 hover:text-[#2563eb]'}`}
-          >
-            <Home className={`h-5 w-5 transition-colors ${appView === 'dashboard' ? 'text-white' : 'text-slate-400 group-hover:text-[#2563eb]'}`} />
-            {t('home')}
-          </button>
-          
-          <button 
-            onClick={() => { setAppView('planner'); setSelectedBusId(null); setRouteResults(null); setTransferSuggestion(false); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
-            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-bold transition-all duration-200 group ${appView === 'planner' ? 'bg-[#2563eb] text-white shadow-md shadow-blue-500/20' : 'text-slate-600 hover:bg-blue-50 hover:text-[#2563eb]'}`}
-          >
-            <Search className={`h-5 w-5 transition-colors ${appView === 'planner' ? 'text-white' : 'text-slate-400 group-hover:text-[#2563eb]'}`} />
-            {t('planner')}
-          </button>
+      <main className="flex-1 overflow-y-auto">
 
-          <button 
-            onClick={() => { setAppView('multi_leg'); setSelectedBusId(null); setRouteResults(null); setTransferSuggestion(false); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
-            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-bold transition-all duration-200 group ${appView === 'multi_leg' ? 'bg-[#2563eb] text-white shadow-md shadow-blue-500/20' : 'text-slate-600 hover:bg-blue-50 hover:text-[#2563eb]'}`}
-          >
-            <Route className={`h-5 w-5 transition-colors ${appView === 'multi_leg' ? 'text-white' : 'text-slate-400 group-hover:text-[#2563eb]'}`} />
-            {t('multi_planner')}
-          </button>
+        {/* HOME HERO */}
+        {appView === 'dashboard' && (
+          <section className="relative overflow-hidden bg-gradient-to-br from-[#0a3660] via-[#0f4c81] to-[#1d6aa6] text-white">
+            <div className="absolute -top-24 -right-16 w-96 h-96 rounded-full bg-white/5"></div>
+            <div className="absolute -bottom-32 -left-20 w-[28rem] h-[28rem] rounded-full bg-white/5"></div>
+            <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 lg:py-16 text-center">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">{t('find_bus')}</h1>
+              <p className="mt-3 text-sm sm:text-base text-blue-100 max-w-2xl mx-auto">
+                {t('tracking_info').replace('{b}', buses.length).replace('{s}', allStops.length)}
+              </p>
 
-          <button 
-            onClick={() => { setAppView('routes'); setSelectedBusId(null); setRouteResults(null); setTransferSuggestion(false); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
-            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-bold transition-all duration-200 group ${appView === 'routes' ? 'bg-[#2563eb] text-white shadow-md shadow-blue-500/20' : 'text-slate-600 hover:bg-blue-50 hover:text-[#2563eb]'}`}
-          >
-            <List className={`h-5 w-5 transition-colors ${appView === 'routes' ? 'text-white' : 'text-slate-400 group-hover:text-[#2563eb]'}`} />
-            {t('routes_dir')}
-          </button>
+              <div className="mt-8 bg-white text-slate-800 rounded-2xl shadow-2xl p-3 sm:p-4 text-left">
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#0f4c81]" />
+                  <input 
+                    type="text" 
+                    placeholder={t('search_placeholder')} 
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-semibold placeholder:text-slate-400 placeholder:font-medium outline-none focus:bg-white focus:border-[#0f4c81] focus:ring-4 focus:ring-blue-100 transition"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if(e.target.value !== '') setActiveTab('list'); 
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
-          <button 
-            onClick={() => { setAppView('schedule'); setSelectedBusId(null); setRouteResults(null); setTransferSuggestion(false); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
-            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-bold transition-all duration-200 group ${appView === 'schedule' ? 'bg-[#2563eb] text-white shadow-md shadow-blue-500/20' : 'text-slate-600 hover:bg-blue-50 hover:text-[#2563eb]'}`}
-          >
-            <CalendarDays className={`h-5 w-5 transition-colors ${appView === 'schedule' ? 'text-white' : 'text-slate-400 group-hover:text-[#2563eb]'}`} />
-            {t('route_schedule')}
-          </button>
+        {/* PLANNER / MULTI-LEG BANNER */}
+        {(appView === 'planner' || appView === 'multi_leg') && (
+          <section className="bg-gradient-to-br from-[#0a3660] to-[#0f4c81] text-white">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{appView === 'multi_leg' ? t('multi_planner') : t('planner')}</h1>
+              <p className="mt-2 text-sm sm:text-base text-blue-100">
+                {t('tracking_info').replace('{b}', buses.length).replace('{s}', allStops.length)}
+              </p>
+            </div>
+          </section>
+        )}
 
-          {/* Added back for mobile access in the sidebar menu */}
-          <button 
-            onClick={() => { setAppView('developers'); setSelectedBusId(null); setRouteResults(null); setTransferSuggestion(false); if(window.innerWidth < 1024) setIsSidebarOpen(false); }}
-            className={`w-full flex lg:hidden items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-bold transition-all duration-200 group ${appView === 'developers' ? 'bg-[#2563eb] text-white shadow-md shadow-blue-500/20' : 'text-slate-600 hover:bg-blue-50 hover:text-[#2563eb]'}`}
-          >
-            <Code className={`h-5 w-5 transition-colors ${appView === 'developers' ? 'text-white' : 'text-slate-400 group-hover:text-[#2563eb]'}`} />
-            {t('developers_corner')}
-          </button>
-        </nav>
+        <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
 
-        {/* REGIONAL LANGUAGE SWITCHER */}
-        <div className="p-4 border-t border-slate-200 shrink-0 min-w-[16rem]">
-          <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-            <Globe className="h-4 w-4" /> Language / भाषा / భాష
-          </label>
-          <select
-            value={lang}
-            onChange={e => setLang(e.target.value)}
-            className="w-full bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#2563eb] border border-slate-200 cursor-pointer"
-          >
-            <option value="en">English (Default)</option>
-            <option value="hi">हिंदी (Hindi)</option>
-            <option value="te">తెలుగు (Telugu)</option>
-          </select>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col relative overflow-hidden z-10 w-full lg:w-auto">
-        
-        {/* DYNAMIC TOP HEADER FOR EXPAND/COLLAPSE */}
-        <header className="bg-white border-b border-slate-200 h-[72px] px-4 sm:px-6 flex items-center shrink-0 z-20 gap-4">
-           <div className="flex items-center gap-3">
-               <button 
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-                  className="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 hover:text-[#2563eb] transition-all shadow-sm flex-shrink-0"
-               >
-                  <Menu className="h-6 w-6" />
-               </button>
-               {/* SPTIS Header logic so Hamburger is right next to it when sidebar hides */}
-               <h1 className={`text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2.5 ${isSidebarOpen ? 'lg:hidden' : ''}`}>
-                 <Bus className="h-7 w-7 text-[#2563eb]" /> SPTIS
-               </h1>
-           </div>
-           
-           {/* Visible only on Desktop (lg) screens */}
-           <button 
-             onClick={() => { setAppView('developers'); setSelectedBusId(null); setRouteResults(null); setTransferSuggestion(false); }}
-             className={`ml-auto hidden lg:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition border cursor-pointer ${appView === 'developers' ? 'bg-[#2563eb] text-white shadow-sm border-blue-600' : 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100'}`}
-           >
-             <Code className="h-4 w-4" /> Developer's Corner
-           </button>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          
           {appView === 'bus_details' && renderBusDetails()}
-          
+
           {appView === 'dashboard' && (
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-7xl mx-auto w-full lg:h-[calc(100vh-120px)] pb-10 lg:pb-0">
-              <aside className="w-full lg:w-1/3 flex flex-col gap-6">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                  <h2 className="text-lg font-semibold text-slate-800 mb-4">{t('find_bus')}</h2>
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                      <input 
-                        type="text" 
-                        placeholder={t('search_placeholder')} 
-                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2563eb] focus:border-[#2563eb] outline-none relative z-10"
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          if(e.target.value !== '') setActiveTab('list'); 
-                        }}
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 text-center">
-                      {t('tracking_info').replace('{b}', buses.length).replace('{s}', allStops.length)}
-                    </p>
-                  </div>
-                </div>
+            <div className="flex flex-col gap-6 w-full">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                <h3 className="text-sm font-semibold text-[#0f4c81] flex items-center gap-2 mb-3">
+                  <Info className="h-4 w-4" /> {t('system_indicators')}
+                </h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-sm text-slate-600">
+                  <li className="flex items-start gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                    <p><strong>{t('updating_buffer')}</strong> {t('passenger_counts_est')}</p>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                    <p><strong>{t('confirmed_seats')}</strong> {t('ticket_buffer_cleared')}</p>
+                  </li>
+                </ul>
+              </div>
 
-                <div className="bg-blue-50 p-5 rounded-xl border border-blue-100">
-                  <h3 className="text-sm font-semibold text-blue-800 flex items-center gap-2 mb-3">
-                    <Info className="h-4 w-4" /> {t('system_indicators')}
-                  </h3>
-                  <ul className="text-sm text-slate-600 space-y-3">
-                    <li className="flex items-start gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
-                      <p><strong>{t('updating_buffer')}</strong> {t('passenger_counts_est')}</p>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
-                      <p><strong>{t('confirmed_seats')}</strong> {t('ticket_buffer_cleared')}</p>
-                    </li>
-                  </ul>
-                </div>
-              </aside>
-
-              <section className="w-full lg:w-2/3 flex flex-col lg:h-full">
-                <div className="flex bg-slate-200 p-1 rounded-lg w-fit mb-6">
+              <section className="w-full flex flex-col">
+                <div className="inline-flex bg-white border border-slate-200 p-1 rounded-full w-fit mb-5 shadow-sm">
                   <button 
                     onClick={() => setActiveTab('map')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'map' ? 'bg-white shadow-sm text-[#2563eb]' : 'text-slate-600 hover:text-slate-900'}`}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition ${activeTab === 'map' ? 'bg-[#0f4c81] text-white shadow-sm' : 'text-slate-600 hover:text-[#0f4c81]'}`}
                   >
                     <MapIcon className="h-4 w-4" /> {t('map_view')}
                   </button>
                   <button 
                     onClick={() => setActiveTab('list')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'list' ? 'bg-white shadow-sm text-[#2563eb]' : 'text-slate-600 hover:text-slate-900'}`}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition ${activeTab === 'list' ? 'bg-[#0f4c81] text-white shadow-sm' : 'text-slate-600 hover:text-[#0f4c81]'}`}
                   >
                     <Bus className="h-4 w-4" /> {t('list_view')}
                   </button>
                 </div>
-
                 {activeTab === 'list' ? (
-                  <div className="space-y-4 h-[450px] sm:h-[600px] lg:h-full lg:max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
+                  <div className="space-y-4 max-h-[640px] overflow-y-auto pr-2">
                     {filteredBuses.length > 0 ? filteredBuses.map((bus) => {
                       const currentLocationStr = bus.bufferActive 
                         ? tLoc(bus.stops[bus.currentStopIndex].name) 
@@ -1821,7 +1801,7 @@ export default function App() {
                       const progressColor = occPercent >= 100 ? 'bg-rose-500' : occPercent > 80 ? 'bg-amber-500' : 'bg-emerald-500';
 
                       return (
-                      <div key={bus.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:border-[#2563eb] hover:shadow-md transition cursor-pointer" onClick={() => openBusDetails(bus.id)}>
+                      <div key={bus.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:border-[#0f4c81] hover:shadow-md transition cursor-pointer" onClick={() => openBusDetails(bus.id)}>
                         <div className="p-5">
                           <div className="flex justify-between items-start mb-4">
                             <div>
@@ -1829,7 +1809,7 @@ export default function App() {
                                 <span className="inline-block px-2 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded">
                                   {bus.id}
                                 </span>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb] bg-blue-50 px-2 py-1 rounded">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f4c81] bg-blue-50 px-2 py-1 rounded">
                                   {translateBusType(bus.type)}
                                 </span>
                                 {bus.scheduledTime && (
@@ -1871,7 +1851,7 @@ export default function App() {
                                 </div>
                                 <div className="text-[10px] font-black text-slate-500 flex items-center gap-1.5">
                                   <span className="bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
-                                    <Users className="w-3 h-3 text-[#2563eb]" /> {t('pass_holders')}: ~{bus.estimatedPassHolders}
+                                    <Users className="w-3 h-3 text-[#0f4c81]" /> {t('pass_holders')}: ~{bus.estimatedPassHolders}
                                   </span>
                                 </div>
                               </div>
@@ -1909,7 +1889,6 @@ export default function App() {
               </section>
             </div>
           )}
-
           {/* COMBINED VIEW FOR BUS FINDER & MULTI-LEG PLANNER */}
           {(appView === 'planner' || appView === 'multi_leg') && (
             <div className="max-w-3xl mx-auto flex flex-col gap-6 w-full pb-10">
@@ -1927,9 +1906,9 @@ export default function App() {
                 </div>
                 
                 {/* REDESIGNED HORIZONTAL SEARCH BAR */}
-                <div className="bg-slate-50 p-2 rounded-[2rem] border border-slate-200 relative z-30 flex flex-col md:flex-row items-stretch mb-6 gap-2">
+                <div className="bg-slate-50 p-2 rounded-2xl border border-slate-200 relative z-30 flex flex-col md:flex-row items-stretch mb-6 gap-2">
                    
-                   <div className="flex-1 bg-white p-3 rounded-[1.5rem] shadow-sm border border-slate-100">
+                   <div className="flex-1 bg-white p-3 rounded-xl shadow-sm border border-slate-100">
                      <AutocompleteInput 
                         label={t('from')} 
                         value={fromStop} 
@@ -1944,13 +1923,13 @@ export default function App() {
                    <div className="relative flex items-center justify-center -my-3 md:my-0 md:-mx-3 z-40">
                       <button 
                          onClick={handleSwap} 
-                         className="bg-[#2563eb] text-white p-3 rounded-full shadow-lg border-4 border-slate-50 hover:bg-blue-700 transition-transform hover:scale-110 active:scale-95"
+                         className="bg-[#0f4c81] text-white p-3 rounded-full shadow-lg border-4 border-slate-50 hover:bg-blue-700 transition-transform hover:scale-110 active:scale-95"
                       >
                          <ArrowDownUp className="w-5 h-5 md:-rotate-90" />
                       </button>
                    </div>
                    
-                   <div className="flex-1 bg-white p-3 rounded-[1.5rem] shadow-sm border border-slate-100">
+                   <div className="flex-1 bg-white p-3 rounded-xl shadow-sm border border-slate-100">
                      <AutocompleteInput 
                         label={t('to')} 
                         value={toStop} 
@@ -1970,7 +1949,7 @@ export default function App() {
                     <Bus className="w-3 h-3" /> {t('service_type')}
                   </label>
                   <select 
-                    className="w-full px-4 py-3 border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-[#2563eb] outline-none bg-white text-slate-800 font-bold transition-all appearance-none text-center"
+                    className="w-full px-4 py-3 border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-[#0f4c81] outline-none bg-white text-slate-800 font-bold transition-all appearance-none text-center"
                     value={selectedService}
                     onChange={(e) => setSelectedService(e.target.value)}
                     style={{ textAlignLast: 'center' }}
@@ -1983,7 +1962,7 @@ export default function App() {
                 <button 
                   onClick={handlePlanJourney}
                   disabled={!fromStop || !toStop || fromStop === toStop || !allStops.includes(fromStop) || !allStops.includes(toStop)}
-                  className="w-full bg-[#2563eb] text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] relative z-10 tracking-wide"
+                  className="w-full bg-[#0f4c81] text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(15,76,129,0.39)] hover:shadow-[0_6px_20px_rgba(15,76,129,0.23)] relative z-10 tracking-wide"
                 >
                   {appView === 'multi_leg' ? t('discover_routes') : t('search_bus')}
                 </button>
@@ -2014,7 +1993,7 @@ export default function App() {
                     <p className="text-sm font-medium text-indigo-700 leading-relaxed max-w-sm mx-auto">{t('transfer_suggestion')}</p>
                     <button 
                       onClick={() => executeJourneyPlan(fromStop, toStop, 'multi_leg')} 
-                      className="mt-6 bg-[#2563eb] text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-blue-700 transition"
+                      className="mt-6 bg-[#0f4c81] text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-blue-700 transition"
                     >
                       {t('open_multi_leg_planner')}
                     </button>
@@ -2052,15 +2031,15 @@ export default function App() {
                     >
                       {/* --- BUS FINDER (DIRECT ROUTE UI) REDESIGNED --- */}
                       {result.type === 'direct' && appView === 'planner' && (
-                        <div className="relative bg-white rounded-2xl shadow-sm border border-slate-200 hover:border-[#2563eb]/50 hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                        <div className="relative bg-white rounded-2xl shadow-sm border border-slate-200 hover:border-[#0f4c81]/50 hover:shadow-xl transition-all duration-300 overflow-hidden group">
                           {/* Accent left border */}
-                          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#2563eb] to-blue-400"></div>
+                          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#0f4c81] to-blue-400"></div>
                           
                           <div className="p-5 sm:p-6">
                             {/* Header: Bus Info & Occupancy */}
                             <div className="flex items-center justify-between mb-5 pl-2">
                                 <div className="flex items-center gap-3">
-                                  <div className="bg-slate-900 text-white font-black text-xl px-3.5 py-1.5 rounded-xl shadow-md tracking-tight group-hover:bg-[#2563eb] transition-colors">
+                                  <div className="bg-slate-900 text-white font-black text-xl px-3.5 py-1.5 rounded-xl shadow-md tracking-tight group-hover:bg-[#0f4c81] transition-colors">
                                     {busNum1}
                                   </div>
                                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/60">{translateBusType(result.bus.type)}</span>
@@ -2075,7 +2054,7 @@ export default function App() {
                                 {/* Origin */}
                                 <div className="w-[35%] text-left">
                                   <p className="text-lg sm:text-xl font-black text-slate-800 leading-tight mb-2 truncate">{tLoc(fromStop)}</p>
-                                  <div className="inline-flex items-center gap-1.5 text-[11px] font-black text-[#2563eb] bg-white px-2.5 py-1 rounded-lg border border-blue-100 shadow-sm">
+                                  <div className="inline-flex items-center gap-1.5 text-[11px] font-black text-[#0f4c81] bg-white px-2.5 py-1 rounded-lg border border-blue-100 shadow-sm">
                                     <Clock className="w-3.5 h-3.5 opacity-70"/> {t('eta_text')} {formatTimeOffset(result.bus.scheduledTime, result.fromIdx * 3)}
                                   </div>
                                 </div>
@@ -2088,7 +2067,7 @@ export default function App() {
                                   <div className="w-full flex items-center z-0 -mt-1">
                                       <div className="w-2 h-2 rounded-full border-2 border-slate-300 bg-white z-10"></div>
                                       <div className="flex-1 border-t-2 border-dashed border-slate-300"></div>
-                                      <div className="w-2 h-2 rounded-full border-2 border-[#2563eb] bg-white z-10"></div>
+                                      <div className="w-2 h-2 rounded-full border-2 border-[#0f4c81] bg-white z-10"></div>
                                   </div>
                                   <span className="text-[10px] font-black text-slate-400 mt-1.5 uppercase tracking-wider whitespace-nowrap">{result.stopsCount} {t('stops_count')}</span>
                                 </div>
@@ -2128,7 +2107,7 @@ export default function App() {
                                 const dest = result.t1 || result.transferStop || toStop;
                                 return (
                                 <div className="relative flex items-center gap-4 sm:gap-6 mb-5 group">
-                                   <div className="relative z-10 w-14 h-14 bg-slate-800 text-white rounded-2xl shadow-md flex flex-col items-center justify-center border-2 border-white group-hover:bg-[#2563eb] group-hover:scale-105 transition-all flex-shrink-0">
+                                   <div className="relative z-10 w-14 h-14 bg-slate-800 text-white rounded-2xl shadow-md flex flex-col items-center justify-center border-2 border-white group-hover:bg-[#0f4c81] group-hover:scale-105 transition-all flex-shrink-0">
                                       <Bus className="w-4 h-4 mb-0.5 text-blue-200 group-hover:text-white" />
                                       <span className="font-black text-sm">{getBusNum(b.route)}</span>
                                    </div>
@@ -2141,10 +2120,10 @@ export default function App() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                           <span className="bg-slate-200/70 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest">{translateBusType(b.type)}</span>
-                                          <span className="flex items-center gap-1 text-[#2563eb] text-[11px] font-black tracking-wide bg-blue-50 px-2 py-1 rounded border border-blue-100"><Clock className="w-3 h-3" /> {formatTimeDuration(result.d1_time)}</span>
+                                          <span className="flex items-center gap-1 text-[#0f4c81] text-[11px] font-black tracking-wide bg-blue-50 px-2 py-1 rounded border border-blue-100"><Clock className="w-3 h-3" /> {formatTimeDuration(result.d1_time)}</span>
                                         </div>
                                       </div>
-                                      <button onClick={(e) => { e.stopPropagation(); executeJourneyPlan(fromStop, dest, 'planner'); }} className="shrink-0 w-full sm:w-auto bg-white border-2 border-[#2563eb] text-[#2563eb] hover:bg-[#2563eb] hover:text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-2 font-black text-xs shadow-sm">
+                                      <button onClick={(e) => { e.stopPropagation(); executeJourneyPlan(fromStop, dest, 'planner'); }} className="shrink-0 w-full sm:w-auto bg-white border-2 border-[#0f4c81] text-[#0f4c81] hover:bg-[#0f4c81] hover:text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-2 font-black text-xs shadow-sm">
                                         <Search className="w-3.5 h-3.5" /> {t('find_bus_btn')}
                                       </button>
                                    </div>
@@ -2156,7 +2135,7 @@ export default function App() {
                               {result.bus2 && (() => {
                                 return (
                                 <div className="relative flex items-center gap-4 sm:gap-6 mb-5 group">
-                                   <div className="relative z-10 w-14 h-14 bg-slate-800 text-white rounded-2xl shadow-md flex flex-col items-center justify-center border-2 border-white group-hover:bg-[#2563eb] group-hover:scale-105 transition-all flex-shrink-0">
+                                   <div className="relative z-10 w-14 h-14 bg-slate-800 text-white rounded-2xl shadow-md flex flex-col items-center justify-center border-2 border-white group-hover:bg-[#0f4c81] group-hover:scale-105 transition-all flex-shrink-0">
                                       <Bus className="w-4 h-4 mb-0.5 text-blue-200 group-hover:text-white" />
                                       <span className="font-black text-sm">{busNum2}</span>
                                    </div>
@@ -2169,10 +2148,10 @@ export default function App() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                           <span className="bg-slate-200/70 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest">{translateBusType(result.bus2.type)}</span>
-                                          <span className="flex items-center gap-1 text-[#2563eb] text-[11px] font-black tracking-wide bg-blue-50 px-2 py-1 rounded border border-blue-100"><Clock className="w-3 h-3" /> {formatTimeDuration(result.d2_time)}</span>
+                                          <span className="flex items-center gap-1 text-[#0f4c81] text-[11px] font-black tracking-wide bg-blue-50 px-2 py-1 rounded border border-blue-100"><Clock className="w-3 h-3" /> {formatTimeDuration(result.d2_time)}</span>
                                         </div>
                                       </div>
-                                      <button onClick={(e) => { e.stopPropagation(); executeJourneyPlan(result.t1 || result.transferStop, result.t2 || toStop, 'planner'); }} className="shrink-0 w-full sm:w-auto bg-white border-2 border-[#2563eb] text-[#2563eb] hover:bg-[#2563eb] hover:text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-2 font-black text-xs shadow-sm">
+                                      <button onClick={(e) => { e.stopPropagation(); executeJourneyPlan(result.t1 || result.transferStop, result.t2 || toStop, 'planner'); }} className="shrink-0 w-full sm:w-auto bg-white border-2 border-[#0f4c81] text-[#0f4c81] hover:bg-[#0f4c81] hover:text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-2 font-black text-xs shadow-sm">
                                         <Search className="w-3.5 h-3.5" /> {t('find_bus_btn')}
                                       </button>
                                    </div>
@@ -2184,7 +2163,7 @@ export default function App() {
                               {result.bus3 && (() => {
                                 return (
                                 <div className="relative flex items-center gap-4 sm:gap-6 group">
-                                   <div className="relative z-10 w-14 h-14 bg-slate-800 text-white rounded-2xl shadow-md flex flex-col items-center justify-center border-2 border-white group-hover:bg-[#2563eb] group-hover:scale-105 transition-all flex-shrink-0">
+                                   <div className="relative z-10 w-14 h-14 bg-slate-800 text-white rounded-2xl shadow-md flex flex-col items-center justify-center border-2 border-white group-hover:bg-[#0f4c81] group-hover:scale-105 transition-all flex-shrink-0">
                                       <Bus className="w-4 h-4 mb-0.5 text-blue-200 group-hover:text-white" />
                                       <span className="font-black text-sm">{busNum3}</span>
                                    </div>
@@ -2197,10 +2176,10 @@ export default function App() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                           <span className="bg-slate-200/70 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest">{translateBusType(result.bus3.type)}</span>
-                                          <span className="flex items-center gap-1 text-[#2563eb] text-[11px] font-black tracking-wide bg-blue-50 px-2 py-1 rounded border border-blue-100"><Clock className="w-3 h-3" /> {formatTimeDuration(result.d3_time)}</span>
+                                          <span className="flex items-center gap-1 text-[#0f4c81] text-[11px] font-black tracking-wide bg-blue-50 px-2 py-1 rounded border border-blue-100"><Clock className="w-3 h-3" /> {formatTimeDuration(result.d3_time)}</span>
                                         </div>
                                       </div>
-                                      <button onClick={(e) => { e.stopPropagation(); executeJourneyPlan(result.t2, toStop, 'planner'); }} className="shrink-0 w-full sm:w-auto bg-white border-2 border-[#2563eb] text-[#2563eb] hover:bg-[#2563eb] hover:text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-2 font-black text-xs shadow-sm">
+                                      <button onClick={(e) => { e.stopPropagation(); executeJourneyPlan(result.t2, toStop, 'planner'); }} className="shrink-0 w-full sm:w-auto bg-white border-2 border-[#0f4c81] text-[#0f4c81] hover:bg-[#0f4c81] hover:text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-2 font-black text-xs shadow-sm">
                                         <Search className="w-3.5 h-3.5" /> {t('find_bus_btn')}
                                       </button>
                                    </div>
@@ -2226,7 +2205,7 @@ export default function App() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 relative z-10 gap-4">
                   <div>
                     <h2 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                        <List className="w-8 h-8 text-[#2563eb]" /> {t('routes_dir')}
+                        <List className="w-8 h-8 text-[#0f4c81]" /> {t('routes_dir')}
                     </h2>
                     <p className="text-slate-500 mt-2 font-medium max-w-2xl text-[15px]">{t('routes_dir_desc')}</p>
                   </div>
@@ -2238,11 +2217,11 @@ export default function App() {
                 <div className="grid grid-cols-1 gap-6 relative z-10">
                   {Array.from(new Map(buses.map(b => [b.route, b])).values()).map((bus, idx) => (
                     <div key={idx} className="bg-white rounded-2xl p-6 md:p-7 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-blue-200 transition-all duration-300 relative overflow-hidden group">
-                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#2563eb] to-indigo-400 transform origin-top group-hover:scale-y-110 transition-transform duration-300"></div>
+                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#0f4c81] to-indigo-400 transform origin-top group-hover:scale-y-110 transition-transform duration-300"></div>
                         
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-6">
                             <div className="flex items-center gap-4 md:gap-5">
-                                <div className="bg-[#2563eb] text-white p-3 md:p-4 rounded-2xl font-black text-xl md:text-2xl min-w-[5rem] text-center shadow-md group-hover:bg-blue-700 transition-colors">
+                                <div className="bg-[#0f4c81] text-white p-3 md:p-4 rounded-2xl font-black text-xl md:text-2xl min-w-[5rem] text-center shadow-md group-hover:bg-blue-700 transition-colors">
                                     {bus.route.split(' - ')[0]}
                                 </div>
                                 <div>
@@ -2259,7 +2238,7 @@ export default function App() {
                             </div>
                             <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto border-t border-slate-100 pt-4 md:pt-0 md:border-0">
                                 <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
-                                    <MapPin className="w-4 h-4 text-[#2563eb]" />
+                                    <MapPin className="w-4 h-4 text-[#0f4c81]" />
                                     <span className="text-sm font-black text-slate-700">{bus.stops.length} <span className="text-slate-500 font-bold ml-0.5">{t('stops')}</span></span>
                                 </div>
                             </div>
@@ -2272,7 +2251,7 @@ export default function App() {
                             <div className="flex flex-wrap items-center gap-y-2.5 gap-x-2">
                                 {bus.stops.map((stop, sIdx) => (
                                 <React.Fragment key={sIdx}>
-                                    <span className={`text-[12px] md:text-[13px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${sIdx === 0 || sIdx === bus.stops.length - 1 ? 'bg-[#2563eb] text-white border-[#2563eb] shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 group-hover:border-slate-300'}`}>
+                                    <span className={`text-[12px] md:text-[13px] font-bold px-3 py-1.5 rounded-lg border transition-colors ${sIdx === 0 || sIdx === bus.stops.length - 1 ? 'bg-[#0f4c81] text-white border-[#0f4c81] shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 group-hover:border-slate-300'}`}>
                                     {tLoc(stop.name)}
                                     </span>
                                     {sIdx < bus.stops.length - 1 && (
@@ -2296,7 +2275,7 @@ export default function App() {
                 
                 <div className="p-6 md:p-8 border-b border-slate-100 bg-gradient-to-r from-blue-50/50 to-white relative z-10">
                   <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 mb-2 tracking-tight">
-                    <CalendarDays className="h-7 w-7 text-[#2563eb]" />
+                    <CalendarDays className="h-7 w-7 text-[#0f4c81]" />
                     {t('schedule_title')}
                   </h2>
                   <p className="text-sm font-bold text-slate-500 flex items-center gap-2 ml-10">
@@ -2323,10 +2302,10 @@ export default function App() {
                           <tr key={bus.id} className="hover:bg-blue-50/60 transition-colors cursor-pointer group" onClick={() => openBusDetails(bus.id)}>
                             <td className="px-8 py-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#2563eb] flex items-center justify-center font-bold shadow-sm group-hover:bg-[#2563eb] group-hover:text-white transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#0f4c81] flex items-center justify-center font-bold shadow-sm group-hover:bg-[#0f4c81] group-hover:text-white transition-colors">
                                         <Bus className="w-5 h-5" />
                                     </div>
-                                    <span className="font-black text-[15px] text-slate-800 group-hover:text-[#2563eb] transition-colors">{bus.id}</span>
+                                    <span className="font-black text-[15px] text-slate-800 group-hover:text-[#0f4c81] transition-colors">{bus.id}</span>
                                 </div>
                             </td>
                             <td className="px-8 py-4">
@@ -2359,14 +2338,14 @@ export default function App() {
           {appView === 'developers' && (
             <div className="max-w-5xl mx-auto flex flex-col gap-6 w-full pb-10">
               <div className="bg-white rounded-3xl shadow-sm border border-slate-200 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-32 bg-[#0033a0] z-0"></div>
+                <div className="absolute top-0 left-0 w-full h-32 bg-[#0a3660] z-0"></div>
 
                 <div className="relative z-10 mt-12 mb-8 px-6">
                     <div className="w-24 h-24 bg-white rounded-full mx-auto shadow-lg flex items-center justify-center border-4 border-slate-50 mb-6">
-                        <Code className="h-10 w-10 text-[#2563eb]" />
+                        <Code className="h-10 w-10 text-[#0f4c81]" />
                     </div>
                     <h2 className="text-3xl font-black text-slate-800 tracking-tight">Developer's Corner</h2>
-                    <p className="text-lg font-bold text-[#2563eb] mt-2">JNTUH University College of Engineering Sultanpur</p>
+                    <p className="text-lg font-bold text-[#0f4c81] mt-2">JNTUH University College of Engineering Sultanpur</p>
                     <p className="text-sm font-medium text-slate-500 mt-1">Branch: Cyber Security CSE(CS) • 2nd Year</p>
                 </div>
 
@@ -2394,8 +2373,27 @@ export default function App() {
             </div>
           )}
 
-        </main>
-      </div>
+        </div>
+      </main>
+
+      {/* BOTTOM NAVIGATION (MOBILE) */}
+      <nav className="lg:hidden shrink-0 bg-white border-t border-slate-200 z-30 pb-[env(safe-area-inset-bottom)]">
+        <div className="grid grid-cols-5">
+          {navItems.map(({ view, Icon, label }) => {
+            const active = appView === view;
+            return (
+              <button
+                key={view}
+                onClick={() => goToView(view)}
+                className={`flex flex-col items-center gap-1 pt-2.5 pb-2 px-1 text-[10px] font-semibold transition-colors ${active ? 'text-[#0f4c81]' : 'text-slate-500'}`}
+              >
+                <Icon className={`h-5 w-5 ${active ? 'stroke-[2.5]' : ''}`} />
+                <span className="w-full truncate text-center">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
