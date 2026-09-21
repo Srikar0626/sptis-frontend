@@ -1,1 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&family=Noto+Sans+Telugu:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  /* Typography (Figma: Outfit headings, Inter body) */
+  --font-sans: "Inter", "Noto Sans Telugu", "Noto Sans Devanagari", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Outfit", "Inter", "Noto Sans Telugu", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
+
+  /* Softer weights, closer to the Figma look */
+  --font-weight-extrabold: 700;
+  --font-weight-black: 700;
+
+  /* Tighter card corners */
+  --radius-2xl: 0.875rem;
+  --radius-3xl: 1rem;
+
+  /* Figma navy palette: replaces Tailwind's blue and indigo everywhere */
+  --color-blue-50: #eef4fa;
+  --color-blue-100: #dbe8f4;
+  --color-blue-200: #b9d2e8;
+  --color-blue-300: #8db4d6;
+  --color-blue-400: #5a90c0;
+  --color-blue-500: #2f6fa5;
+  --color-blue-600: #0f4c81;
+  --color-blue-700: #0c3f6c;
+  --color-blue-800: #0a3660;
+  --color-blue-900: #072a4b;
+  --color-blue-950: #051d34;
+
+  --color-indigo-50: #eef4fa;
+  --color-indigo-100: #dbe8f4;
+  --color-indigo-200: #b9d2e8;
+  --color-indigo-300: #8db4d6;
+  --color-indigo-400: #5a90c0;
+  --color-indigo-500: #2f6fa5;
+  --color-indigo-600: #0f4c81;
+  --color-indigo-700: #0c3f6c;
+  --color-indigo-800: #0a3660;
+  --color-indigo-900: #072a4b;
+  --color-indigo-950: #051d34;
+}
+
+@layer base {
+  body {
+    background-color: #f6f8fb;
+    color: #1e293b;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+}
