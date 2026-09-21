@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bus, Map as MapIcon, Users, Clock, Search, MapPin, AlertCircle, Info, ArrowRight, ArrowDownUp, ChevronLeft, RefreshCw, UserMinus, Lightbulb, Activity, Home, List, Globe, CalendarDays, Route, MapPinOff, Coins, Zap, ShieldAlert, Sparkles, Code } from 'lucide-react';
+import { Bus, Map as MapIcon, Users, Clock, Search, MapPin, AlertCircle, Info, ArrowRight, ArrowDownUp, ChevronLeft, RefreshCw, UserMinus, Lightbulb, Activity, Home, List, Globe, CalendarDays, Route, MapPinOff, Coins, Zap, ShieldAlert, Sparkles, Code, Train } from 'lucide-react';
 import { supabase } from './supabaseClient';
+import MultiModalPlanner from './components/MultiModalPlanner';
+import ChatBot from './components/ChatBot';
 
 // --- TRANSLATIONS DICTIONARY ---
 const translations = {
@@ -8,6 +10,7 @@ const translations = {
     home: "Home",
     planner: "Bus Finder",
     multi_planner: "Multi-Leg Planner",
+    bus_metro: "Bus + Metro",
     routes_dir: "Routes Directory",
     route_schedule: "Route Schedule",
     find_bus: "Track Live Buses",
@@ -143,6 +146,7 @@ const translations = {
     home: "होम",
     planner: "बस फाइंडर",
     multi_planner: "मल्टी-लेग प्लानर",
+    bus_metro: "बस + मेट्रो",
     routes_dir: "रूट्स डायरेक्टरी",
     route_schedule: "रूट अनुसूची",
     find_bus: "लाइव बसें ट्रैक करें",
@@ -278,6 +282,7 @@ const translations = {
     home: "హోమ్",
     planner: "బస్సు ఫైండర్",
     multi_planner: "మल्टी-లెగ్ ప్లానర్",
+    bus_metro: "బస్ + మెట్రో",
     routes_dir: "మార్గాల డైరెక్టరీ",
     route_schedule: "మార్గం షెడ్యూల్",
     find_bus: "లైవ్ బస్సులను ట్రాక్ చేయండి",
@@ -1595,7 +1600,7 @@ export default function App() {
   const navItems = [
     { view: 'dashboard', Icon: Home, label: t('home') },
     { view: 'planner', Icon: Search, label: t('planner') },
-    { view: 'multi_leg', Icon: Route, label: t('multi_planner') },
+    { view: 'journey', Icon: Train, label: t('bus_metro') },
     { view: 'routes', Icon: List, label: t('routes_dir') },
     { view: 'schedule', Icon: CalendarDays, label: t('route_schedule') },
   ];
@@ -1752,6 +1757,12 @@ export default function App() {
         <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
 
           {appView === 'bus_details' && renderBusDetails()}
+
+          {appView === 'journey' && (
+            <div className="max-w-3xl mx-auto w-full">
+              <MultiModalPlanner buses={buses} onOpenBus={openBusDetails} />
+            </div>
+          )}
 
           {appView === 'dashboard' && (
             <div className="flex flex-col gap-6 w-full">
@@ -2391,6 +2402,9 @@ export default function App() {
           })}
         </div>
       </nav>
+
+      {/* AI ASSISTANT (floating on desktop, full screen sheet on phones) */}
+      <ChatBot lang={lang} />
     </div>
   );
 }
