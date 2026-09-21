@@ -75,7 +75,9 @@ function JourneyMap({ journey }) {
     if (!window.L || !el.current || !journey) return;
     if (!map.current) {
       map.current = window.L.map(el.current, { zoomControl: false, attributionControl: false });
-      window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map.current);
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map.current);
     }
     map.current.eachLayer((l) => { if (l instanceof window.L.Polyline || l instanceof window.L.CircleMarker) map.current.removeLayer(l); });
 
