@@ -2346,13 +2346,13 @@ export default function App() {
                     </div>
                     <h2 className="text-3xl font-black text-slate-800 tracking-tight">Developer's Corner</h2>
                     <p className="text-lg font-bold text-[#0f4c81] mt-2">JNTUH University College of Engineering Sultanpur</p>
-                    <p className="text-sm font-medium text-slate-500 mt-1">Branch: Cyber Security CSE(CS) • 2nd Year</p>
+                    
                 </div>
 
                 <div className="p-6 sm:p-10 pt-0 max-w-3xl mx-auto w-full">
                     {/* Team Members */}
                     <div className="bg-blue-50 rounded-2xl p-6 sm:p-8 border border-blue-100 flex flex-col">
-                        <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest mb-6 flex items-center justify-center gap-2"><Users className="w-4 h-4"/> Project Team</h3>
+                        <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest mb-6 flex items-center justify-center gap-2"><Users className="w-4 h-4"/>Team VisionX</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
                             <div className="bg-white p-5 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center h-full min-h-[5rem]">
                                 <h4 className="font-black text-slate-800 text-sm leading-snug">Marepally Sreekar<br/>Kumar Netha</h4>
@@ -2364,7 +2364,7 @@ export default function App() {
                                 <h4 className="font-black text-slate-800 text-sm leading-snug">Misba<br/>Sultana</h4>
                             </div>
                             <div className="bg-white p-5 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center h-full min-h-[5rem]">
-                                <h4 className="font-black text-slate-800 text-sm leading-snug">Thipris<br/>Shivaraj</h4>
+                                <h4 className="font-black text-slate-800 text-sm leading-snug">Muzakkir<br/>Hussain</h4>
                             </div>
                         </div>
                     </div>
