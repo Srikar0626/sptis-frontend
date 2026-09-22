@@ -264,7 +264,11 @@ export default function MultiModalPlanner({
         <button
           onClick={() => run()}
           disabled={!from || !to || from === to || searching}
-          className="w-full bg-[#0f4c81] text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-[0_4px_14px_0_rgba(15,76,129,0.39)] flex items-center justify-center gap-2 tracking-wide"
+          // relative + a z-index above the PlaceInput dropdowns (z-30): without
+          // this, an autocomplete list left open over "From" or "To" sits on
+          // top of this button and swallows the click before it ever reaches
+          // Find routes, so nothing appears to happen.
+          className="relative z-40 w-full bg-[#0f4c81] text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-[0_4px_14px_0_rgba(15,76,129,0.39)] flex items-center justify-center gap-2 tracking-wide"
         >
           {searching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
           Find routes
