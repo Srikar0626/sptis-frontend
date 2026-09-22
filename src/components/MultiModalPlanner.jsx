@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import {
   MapPin, MapPinOff, ArrowDownUp, Search, Zap, Coins, Route as RouteIcon,
   Users, Leaf, Train, Clock, ShieldAlert, Loader2, Info
@@ -14,9 +14,10 @@ const SORT_LABEL = {
   fastest: 'Fastest', cheapest: 'Cheapest', fewest: 'Fewest changes', least_crowded: 'Least crowded'
 };
 
-function PlaceInput({ label, value, onChange, places, icon, placeholder }) {
+function PlaceInput({ label, value, onChange, places, icon, placeholder, boundaryRef }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState(value || '');
+  const [maxHeight, setMaxHeight] = useState(256); // fallback ~ max-h-64
   const box = useRef(null);
 
   useEffect(() => { setText(value || ''); }, [value]);
@@ -25,6 +26,33 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder }) {
     document.addEventListener('mousedown', away);
     return () => document.removeEventListener('mousedown', away);
   }, []);
+
+  // Cap the dropdown to the real space between the input and whatever sits
+  // below it (the Find routes button), so it always renders fully on top of
+  // that element instead of being painted over by it. Recomputed whenever
+  // the dropdown opens and on resize/scroll while it's open, since the gap
+  // is layout-dependent (mobile stacks the fields, desktop doesn't).
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    const GAP = 12; // breathing room above the boundary
+    const FLOOR = 80; // never shrink so much the list becomes unusable
+    const compute = () => {
+      if (!box.current) return;
+      const inputBottom = box.current.getBoundingClientRect().bottom;
+      const boundaryTop = boundaryRef?.current
+        ? boundaryRef.current.getBoundingClientRect().top
+        : window.innerHeight;
+      const available = boundaryTop - inputBottom - GAP;
+      setMaxHeight(Math.max(available, FLOOR));
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    window.addEventListener('scroll', compute, true);
+    return () => {
+      window.removeEventListener('resize', compute);
+      window.removeEventListener('scroll', compute, true);
+    };
+  }, [open, boundaryRef]);
 
   const matches = useMemo(() => {
     const q = text.trim().toLowerCase();
@@ -44,7 +72,10 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder }) {
         className="w-full px-4 py-3 border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-[#0f4c81] outline-none bg-white text-slate-800 font-bold transition-all"
       />
       {open && matches.length > 0 && (
-        <ul className="absolute z-30 mt-2 w-full max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl">
+        <ul
+          className="absolute z-30 mt-2 w-full overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl"
+          style={{ maxHeight }}
+        >
           {matches.map((p) => (
             <li
               key={p.id}
@@ -172,6 +203,7 @@ export default function MultiModalPlanner({
   const [openIdx, setOpenIdx] = useState(0);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState(null); // { missing, suggestions } | { crashed: true } | null
+  const findRoutesBtnRef = useRef(null);
 
   useEffect(() => { loadMetro().then(() => setReady(true)).catch(() => setReady(false)); }, []);
 
@@ -246,6 +278,7 @@ export default function MultiModalPlanner({
             label="From" value={from} onChange={(v) => { setFrom(v); setSearchError(null); }} places={options}
             placeholder="Stop or metro station"
             icon={<MapPin className="w-3 h-3 text-slate-400" />}
+            boundaryRef={findRoutesBtnRef}
           />
           <button
             onClick={() => { const a = from; setFrom(to); setTo(a); }}
@@ -258,16 +291,20 @@ export default function MultiModalPlanner({
             label="To" value={to} onChange={(v) => { setTo(v); setSearchError(null); }} places={options}
             placeholder="Stop or metro station"
             icon={<MapPinOff className="w-3 h-3 text-slate-400" />}
+            boundaryRef={findRoutesBtnRef}
           />
         </div>
 
         <button
+          ref={findRoutesBtnRef}
           onClick={() => run()}
           disabled={!from || !to || from === to || searching}
-          // relative + a z-index above the PlaceInput dropdowns (z-30): without
-          // this, an autocomplete list left open over "From" or "To" sits on
-          // top of this button and swallows the click before it ever reaches
-          // Find routes, so nothing appears to happen.
+          // The PlaceInput dropdowns measure the live gap to this button (via
+          // findRoutesBtnRef) and cap their own height to fit inside it, so
+          // they never paint over this button in the first place. z-40 stays
+          // as a belt-and-braces fallback for the instant before that
+          // measurement runs (e.g. very first paint) or on non-standard
+          // viewports where the measured gap ends up wrong.
           className="relative z-40 w-full bg-[#0f4c81] text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-[0_4px_14px_0_rgba(15,76,129,0.39)] flex items-center justify-center gap-2 tracking-wide"
         >
           {searching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
