@@ -3,9 +3,6 @@ import { Bus, Map as MapIcon, Users, Clock, Search, MapPin, AlertCircle, Info, A
 import { supabase } from './supabaseClient';
 import MultiModalPlanner from './components/MultiModalPlanner';
 import ChatBot from './components/ChatBot';
-import { loadMetro } from './lib/metro';
-import { buildPlaces, planJourneys, sortJourneys } from './lib/routing';
-import { LegStrip, LegDetails, CrowdBadge } from './components/MetroLeg';
 
 // --- TRANSLATIONS DICTIONARY ---
 const translations = {
@@ -117,7 +114,7 @@ const translations = {
     expected_deboarding_list: "Expected Passengers Deboarding:",
     no_upcoming_stops: "No more upcoming stops.",
     transfers_required: "Transfers Required",
-    open_multi_leg_planner: "Open Multi-Leg Planner",
+    open_multi_leg_planner: "See Bus + Metro Options",
     discover_routes: "Discover Routes",
     find_bus_btn: "Find Bus",
     syncing_sensors: "SYNCING SENSORS...",
@@ -253,7 +250,7 @@ const translations = {
     expected_deboarding_list: "उतरने वाले अनुमानित यात्री:",
     no_upcoming_stops: "आगे कोई स्टॉप नहीं है।",
     transfers_required: "ट्रांसफर आवश्यक है",
-    open_multi_leg_planner: "मल्टी-लेग प्लानर खोलें",
+    open_multi_leg_planner: "बस + मेट्रो विकल्प देखें",
     discover_routes: "मार्ग खोजें",
     find_bus_btn: "बस खोजें",
     syncing_sensors: "सेंसर सिंक हो रहे हैं...",
@@ -389,7 +386,7 @@ const translations = {
     expected_deboarding_list: "దిగుతారని ఊహించిన ప్రయాణికులు:",
     no_upcoming_stops: "ఇక రాబోయే స్టాప్‌లు లేవు.",
     transfers_required: "ట్రాన్స్‌ఫర్ అవసరం",
-    open_multi_leg_planner: "మల్టీ-లెగ్ ప్లానర్ తెరవండి",
+    open_multi_leg_planner: "బస్ + మెట్రో ఎంపికలు చూడండి",
     discover_routes: "మార్గాలను కనుగొనండి",
     find_bus_btn: "బస్సును కనుగొనండి",
     syncing_sensors: "సెన్సార్లు సమకాలీకరించబడుతున్నాయి...",
@@ -937,11 +934,20 @@ export default function App() {
   const [routeResults, setRouteResults] = useState(null);
   const [recentSearches, setRecentSearches] = useState([]);
   const [transferSuggestion, setTransferSuggestion] = useState(false);
-  const [journeyResults, setJourneyResults] = useState(null); // walk+bus+metro combos, used by the multi-leg fallback
 
-  // Load the metro network once at startup so it's ready the moment the
-  // Bus Finder needs to fall back to a multi-leg (bus+metro) combo.
-  useEffect(() => { loadMetro().catch(() => {}); }, []);
+  // Bus Finder → Bus + Metro handoff: when a direct bus search comes up
+  // short, "See Bus + Metro options" jumps here with the same stops and
+  // fires the search immediately. journeyToken just needs to change value
+  // to re-trigger, even for the exact same from/to as last time.
+  const [journeyFrom, setJourneyFrom] = useState('');
+  const [journeyTo, setJourneyTo] = useState('');
+  const [journeyToken, setJourneyToken] = useState(0);
+  const openInJourneyPlanner = (fromName, toName) => {
+    setJourneyFrom(fromName);
+    setJourneyTo(toName);
+    setJourneyToken((n) => n + 1);
+    setAppView('journey');
+  };
 
   const [selectedBusId, setSelectedBusId] = useState(null);
   const [detailsTab, setDetailsTab] = useState('info'); 
@@ -1054,27 +1060,6 @@ export default function App() {
       const filtered = prev.filter(s => s.from !== searchFrom || s.to !== searchTo);
       return [newSearch, ...filtered].slice(0, 3); 
     });
-
-    // ---- MULTI-LEG FALLBACK: walk + bus + metro combinations ----
-    // Reached when the Bus Finder has no direct bus and the person taps
-    // "Open multi-leg planner". Uses the same engine as the Bus + Metro tab
-    // (routing.js) so a route like Ameerpet metro -> Miyapur metro -> bus to
-    // Patancheru -> bus to JNTU Sultanpur is a real option, not just a
-    // bus-to-bus transfer.
-    if (targetView === 'multi_leg') {
-      const places = buildPlaces(buses);
-      const combos = sortJourneys(
-        planJourneys({ buses, from: searchFrom, to: searchTo, places }),
-        'fastest'
-      );
-      setJourneyResults(combos);
-      setRouteResults(null);
-      setTransferSuggestion(false);
-      setFromStop(searchFrom);
-      setToStop(searchTo);
-      setAppView(targetView);
-      return;
-    }
 
     const getDistance = (bus, start, end) => {
       const sIdx = bus.stops.findIndex(x => x.name === start);
@@ -1789,7 +1774,13 @@ export default function App() {
 
           {appView === 'journey' && (
             <div className="max-w-3xl mx-auto w-full">
-              <MultiModalPlanner buses={buses} onOpenBus={openBusDetails} />
+              <MultiModalPlanner
+                buses={buses}
+                onOpenBus={openBusDetails}
+                initialFrom={journeyFrom}
+                initialTo={journeyTo}
+                searchToken={journeyToken}
+              />
             </div>
           )}
 
@@ -2029,7 +2020,7 @@ export default function App() {
                     <h3 className="text-xl font-black text-indigo-900 mb-2 tracking-tight">{t('transfers_required')}</h3>
                     <p className="text-sm font-medium text-indigo-700 leading-relaxed max-w-sm mx-auto">{t('transfer_suggestion')}</p>
                     <button 
-                      onClick={() => executeJourneyPlan(fromStop, toStop, 'multi_leg')} 
+                      onClick={() => openInJourneyPlanner(fromStop, toStop)} 
                       className="mt-6 bg-[#0f4c81] text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-blue-700 transition"
                     >
                       {t('open_multi_leg_planner')}
@@ -2037,18 +2028,26 @@ export default function App() {
                  </div>
               )}
 
-              {appView === 'planner' && routeResults && routeResults.length === 0 && !transferSuggestion && (
+              {routeResults && routeResults.length === 0 && (!transferSuggestion || appView === 'multi_leg') && (
                 <div className="p-10 text-center bg-white rounded-3xl border border-slate-200 shadow-sm mt-4">
                   <ShieldAlert className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                   <h3 className="text-xl font-black text-slate-800">{t('no_routes')}</h3>
                   <p className="text-sm font-medium text-slate-500 mt-2 max-w-md mx-auto">We couldn't find a direct or multi-transfer route between these locations. Try selecting a nearby major transit hub.</p>
+                  {appView === 'planner' && fromStop && toStop && (
+                    <button
+                      onClick={() => openInJourneyPlanner(fromStop, toStop)}
+                      className="mt-6 bg-[#0f4c81] text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-blue-700 transition"
+                    >
+                      {t('open_multi_leg_planner')}
+                    </button>
+                  )}
                 </div>
               )}
 
-              {appView === 'planner' && routeResults && routeResults.length > 0 && (
+              {routeResults && routeResults.length > 0 && (
                 <div className="space-y-5 relative z-0">
                   <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3 mb-2 px-2">
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">{t('all_upcoming')}</h3>
+                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">{appView === 'multi_leg' ? t('available_journey_options') : t('all_upcoming')}</h3>
                     <span className="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full">{routeResults.length} {t('results_found')}</span>
                   </div>
                   
@@ -2228,67 +2227,6 @@ export default function App() {
                       )}
                     </div>
                   )})}
-                </div>
-              )}
-
-              {/* MULTI-LEG RESULTS: walk + bus + metro combinations */}
-              {appView === 'multi_leg' && (
-                <div className="space-y-5 relative z-0">
-                  {!journeyResults && (
-                    <div className="p-10 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
-                      <p className="text-sm font-bold text-slate-400">Searching walk, bus and metro combinations…</p>
-                    </div>
-                  )}
-
-                  {journeyResults && journeyResults.length === 0 && (
-                    <div className="p-10 text-center bg-white rounded-3xl border border-slate-200 shadow-sm mt-4">
-                      <ShieldAlert className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-xl font-black text-slate-800">{t('no_routes')}</h3>
-                      <p className="text-sm font-medium text-slate-500 mt-2 max-w-md mx-auto">
-                        No walking, bus or metro combination connects these two points right now. Try a nearby hub such as Ameerpet, MG Bus Station or Secunderabad.
-                      </p>
-                    </div>
-                  )}
-
-                  {journeyResults && journeyResults.length > 0 && (
-                    <>
-                      <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3 mb-2 px-2">
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">{t('available_journey_options')}</h3>
-                        <span className="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full">{journeyResults.length} {t('results_found')}</span>
-                      </div>
-
-                      {journeyResults.map((j) => (
-                        <div key={j.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
-                          <div className="p-5">
-                            <div className="flex items-start justify-between gap-3 mb-3">
-                              <div>
-                                <p className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-                                  {Math.round(j.durationSec / 60)}<span className="text-sm font-bold text-slate-400 ml-1">min</span>
-                                </p>
-                                <p className="text-[11px] font-bold text-slate-400 mt-1 flex items-center gap-1">
-                                  <Clock className="w-3.5 h-3.5" /> {j.transfers} change{j.transfers === 1 ? '' : 's'}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-xl font-black text-[#0f4c81] leading-none">₹{j.fare}</p>
-                                {j.walkM > 0 && <p className="text-[11px] font-bold text-slate-400 mt-1">{j.walkM} m walk</p>}
-                              </div>
-                            </div>
-
-                            <LegStrip journey={j} />
-
-                            <div className="flex items-center gap-2 mt-4 flex-wrap">
-                              <CrowdBadge level={j.crowdLevel} />
-                            </div>
-
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                              <LegDetails journey={j} />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </>
-                  )}
                 </div>
               )}
             </div>

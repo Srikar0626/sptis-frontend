@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   MapPin, MapPinOff, ArrowDownUp, Search, Zap, Coins, Route as RouteIcon,
-  Users, Leaf, Train, Clock, ShieldAlert, Loader2
+  Users, Leaf, Train, Clock, ShieldAlert, Loader2, Info
 } from 'lucide-react';
-import { loadMetro, getMetro, secToHHMM, METRO_LINE_STYLE } from '../lib/metro';
+import {
+  loadMetro, getMetro, secToHHMM, METRO_LINE_STYLE
+} from '../lib/metro';
 import { buildPlaces, placeOptions, planJourneys, sortJourneys, SORT_MODES } from '../lib/routing';
 import { LegStrip, LegDetails, CrowdBadge } from './MetroLeg';
 
@@ -37,7 +39,7 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder }) {
       </label>
       <input
         value={text}
-        onChange={(e) => { setText(e.target.value); setOpen(true); }}
+        onChange={(e) => { setText(e.target.value); setOpen(true); onChange(e.target.value); }}
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
         className="w-full px-4 py-3 border-2 border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-[#0f4c81] outline-none bg-white text-slate-800 font-bold transition-all"
@@ -50,7 +52,10 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder }) {
               onClick={() => { onChange(p.name); setText(p.name); setOpen(false); }}
               className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between gap-2"
             >
-              <span className="text-sm font-bold text-slate-700 truncate">{p.name}</span>
+              <span className="text-sm font-bold text-slate-700 truncate">
+                {p.name}
+                {p.kind === 'metro' && <span className="text-slate-400 font-semibold"> (Metro Station)</span>}
+              </span>
               {p.kind === 'metro' && (
                 <span className="flex items-center gap-1 flex-shrink-0">
                   {p.lines.map((l) => (
@@ -67,6 +72,55 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder }) {
   );
 }
 
+/** "Leave now" or pick a clock time — defaults to now, stays live if left alone. */
+function DepartureControl({ date, onChange }) {
+  const [mode, setMode] = useState('now');
+  const [clock, setClock] = useState(() => hhmm(date));
+
+  useEffect(() => {
+    if (mode !== 'now') return;
+    const t = setInterval(() => onChange(new Date()), 30000);
+    return () => clearInterval(t);
+  }, [mode, onChange]);
+
+  function hhmm(d) {
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+
+  return (
+    <div className="flex items-center gap-2 mb-5">
+      <div className="flex rounded-xl border-2 border-slate-100 p-1 bg-slate-50">
+        <button
+          onClick={() => { setMode('now'); onChange(new Date()); }}
+          className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wide transition ${mode === 'now' ? 'bg-white text-[#0f4c81] shadow-sm' : 'text-slate-400'}`}
+        >
+          Leaving now
+        </button>
+        <button
+          onClick={() => setMode('pick')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wide transition ${mode === 'pick' ? 'bg-white text-[#0f4c81] shadow-sm' : 'text-slate-400'}`}
+        >
+          Depart at
+        </button>
+      </div>
+      {mode === 'pick' && (
+        <input
+          type="time"
+          value={clock}
+          onChange={(e) => {
+            setClock(e.target.value);
+            const [h, m] = e.target.value.split(':').map(Number);
+            const d = new Date();
+            d.setHours(h, m, 0, 0);
+            onChange(d);
+          }}
+          className="px-3 py-1.5 rounded-xl border-2 border-slate-100 text-sm font-bold text-slate-700 focus:border-[#0f4c81] outline-none"
+        />
+      )}
+    </div>
+  );
+}
+
 function JourneyMap({ journey }) {
   const el = useRef(null);
   const map = useRef(null);
@@ -75,9 +129,7 @@ function JourneyMap({ journey }) {
     if (!window.L || !el.current || !journey) return;
     if (!map.current) {
       map.current = window.L.map(el.current, { zoomControl: false, attributionControl: false });
-      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map.current);
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map.current);
     }
     map.current.eachLayer((l) => { if (l instanceof window.L.Polyline || l instanceof window.L.CircleMarker) map.current.removeLayer(l); });
 
@@ -103,10 +155,19 @@ function JourneyMap({ journey }) {
   return <div ref={el} className="h-56 sm:h-72 w-full rounded-2xl overflow-hidden border border-slate-200" />;
 }
 
-export default function MultiModalPlanner({ buses = [], busFare = null, onOpenBus = null }) {
+/**
+ * The combined bus + metro + walk planner. Also doubles as the fallback for
+ * Bus Finder: pass `initialFrom`/`initialTo` (and bump `searchToken` to
+ * re-trigger) to land here pre-filled and already searching.
+ */
+export default function MultiModalPlanner({
+  buses = [], busFare = null, onOpenBus = null,
+  initialFrom = '', initialTo = '', searchToken = 0
+}) {
   const [ready, setReady] = useState(!!getMetro());
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+  const [from, setFrom] = useState(initialFrom);
+  const [to, setTo] = useState(initialTo);
+  const [date, setDate] = useState(() => new Date());
   const [sort, setSort] = useState('fastest');
   const [results, setResults] = useState(null);
   const [openIdx, setOpenIdx] = useState(0);
@@ -117,16 +178,24 @@ export default function MultiModalPlanner({ buses = [], busFare = null, onOpenBu
   const places = useMemo(() => (ready ? buildPlaces(buses) : []), [ready, buses.length]);
   const options = useMemo(() => placeOptions(places), [places]);
 
-  const run = () => {
-    if (!from || !to || from === to) return;
+  const run = (f = from, t = to, when = date) => {
+    if (!f || !t || f === t) return;
     setSearching(true);
-    // let the spinner paint before the synchronous search
     setTimeout(() => {
-      setResults(planJourneys({ buses, from, to, busFare, places }));
+      setResults(planJourneys({ buses, from: f, to: t, busFare, places, date: when }));
       setOpenIdx(0);
       setSearching(false);
     }, 10);
   };
+
+  // Arriving here from "Bus Finder → try Bus + Metro" pre-fills and runs.
+  useEffect(() => {
+    if (!ready || !searchToken || !initialFrom || !initialTo) return;
+    setFrom(initialFrom);
+    setTo(initialTo);
+    run(initialFrom, initialTo, new Date());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, searchToken]);
 
   const sorted = useMemo(() => (results ? sortJourneys(results, sort) : null), [results, sort]);
   const metro = getMetro();
@@ -140,6 +209,8 @@ export default function MultiModalPlanner({ buses = [], busFare = null, onOpenBu
             Bus + Metro
           </span>
         </div>
+
+        <DepartureControl date={date} onChange={setDate} />
 
         <div className="flex flex-col sm:flex-row gap-3 sm:items-end mb-5">
           <PlaceInput
@@ -162,7 +233,7 @@ export default function MultiModalPlanner({ buses = [], busFare = null, onOpenBu
         </div>
 
         <button
-          onClick={run}
+          onClick={() => run()}
           disabled={!from || !to || from === to || searching}
           className="w-full bg-[#0f4c81] text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-[0_4px_14px_0_rgba(15,76,129,0.39)] flex items-center justify-center gap-2 tracking-wide"
         >
@@ -175,7 +246,7 @@ export default function MultiModalPlanner({ buses = [], busFare = null, onOpenBu
         )}
         {ready && metro && (
           <p className="text-[11px] font-medium text-slate-400 mt-3 text-center">
-            Metro timetable from {metro.source.publisher} · feed {metro.generatedAt} · bus positions simulated live
+            Metro runs every ~5 min · network &amp; fares from {metro.source.publisher} · bus positions simulated live
           </p>
         )}
       </div>
@@ -220,6 +291,16 @@ export default function MultiModalPlanner({ buses = [], busFare = null, onOpenBu
               open ? 'border-[#0f4c81]/40 shadow-xl' : 'border-slate-200 shadow-sm hover:shadow-md'
             }`}
           >
+            {j.longWait && (
+              <div className="px-5 pt-4 -mb-1 flex items-start gap-2 text-[11px] font-bold text-amber-700 bg-amber-50 border-b border-amber-100">
+                <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                <span className="pb-3">
+                  {j.longWaitKind === 'metro'
+                    ? 'Includes a long wait — the metro isn\'t running yet on this leg. First available departure shown.'
+                    : 'Includes a long wait for one of the buses on this route.'}
+                </span>
+              </div>
+            )}
             <div className="p-5">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>

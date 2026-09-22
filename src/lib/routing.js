@@ -153,11 +153,15 @@ function walkLeg(from, to, startSec) {
 }
 
 // ------------------------------------------------------- access / egress
+const MAX_STOPS_TO_SCAN = 8; // bound the second-bus search so it stays fast
+
 /**
- * Ways of getting from `origin` to a metro station: walk there, or take one
- * bus to a stop next to one. Returns the cheapest few by time.
+ * Ways of getting from `origin` to a metro station: walk there, one bus to a
+ * stop next to one, or one bus to a transfer point and a second bus from
+ * there to a stop next to one. Real journeys often need that second bus —
+ * "ride to the main road, then a second bus to the metro" is normal.
  */
-function accessToMetro(origin, places, buses, startSec, fareFn, limit = 3) {
+function accessToMetro(origin, places, buses, startSec, fareFn, limit = 4) {
   const out = [];
 
   nearestStations(toPoint(origin), MAX_WALK_M, 3).forEach(({ station, m }) => {
@@ -167,24 +171,50 @@ function accessToMetro(origin, places, buses, startSec, fareFn, limit = 3) {
   });
 
   if (origin.kind === 'bus') {
-    (buses || []).forEach((bus) => {
-      const fromIdx = stopIndex(bus, origin.name);
-      if (fromIdx < 0) return;
-      // find a later stop on this bus that sits next to a metro station
-      for (let i = fromIdx + 1; i < bus.stops.length; i++) {
-        const near = nearestStations(toPoint(bus.stops[i]), STOP_TO_STATION_M, 1)[0];
-        if (!near) continue;
-        const leg = busLeg(bus, fromIdx, i, startSec, fareFn);
-        const stationPlace = places.find((p) => p.id === `metro:${near.station.id}`);
-        const legs = [leg];
-        let arr = leg.arrSec;
-        if (near.m > 40 && stationPlace) {
-          const w = walkLeg(bus.stops[i], stationPlace, arr);
-          legs.push(w);
-          arr = w.arrSec;
+    (buses || []).forEach((b1) => {
+      const a = stopIndex(b1, origin.name);
+      if (a < 0) return;
+
+      const scanTo = Math.min(b1.stops.length, a + 1 + MAX_STOPS_TO_SCAN);
+      for (let i = a + 1; i < b1.stops.length; i++) {
+        const near = nearestStations(toPoint(b1.stops[i]), STOP_TO_STATION_M, 1)[0];
+        if (near) {
+          const leg = busLeg(b1, a, i, startSec, fareFn);
+          const legs = [leg];
+          let arr = leg.arrSec;
+          const stationPlace = places.find((p) => p.id === `metro:${near.station.id}`);
+          if (near.m > 40 && stationPlace) {
+            const w = walkLeg(b1.stops[i], stationPlace, arr);
+            legs.push(w); arr = w.arrSec;
+          }
+          out.push({ stationId: near.station.id, legs, arrSec: arr });
+          break; // this bus gets you there directly, no need to look further
         }
-        out.push({ stationId: near.station.id, legs, arrSec: arr });
-        break; // one entry point per bus is enough
+
+        // Not near a station yet — see if a second bus from here reaches one.
+        if (i < scanTo) {
+          const midName = b1.stops[i].name;
+          for (const b2 of buses) {
+            if (b2.id === b1.id) continue;
+            const j = stopIndex(b2, midName);
+            if (j < 0) continue;
+            for (let k = j + 1; k < b2.stops.length; k++) {
+              const near2 = nearestStations(toPoint(b2.stops[k]), STOP_TO_STATION_M, 1)[0];
+              if (!near2) continue;
+              const leg1 = busLeg(b1, a, i, startSec, fareFn);
+              const leg2 = busLeg(b2, j, k, leg1.arrSec + TRANSFER_PENALTY_SEC, fareFn);
+              const legs = [leg1, leg2];
+              let arr = leg2.arrSec;
+              const stationPlace = places.find((p) => p.id === `metro:${near2.station.id}`);
+              if (near2.m > 40 && stationPlace) {
+                const w = walkLeg(b2.stops[k], stationPlace, arr);
+                legs.push(w); arr = w.arrSec;
+              }
+              out.push({ stationId: near2.station.id, legs, arrSec: arr });
+              break;
+            }
+          }
+        }
       }
     });
   }
@@ -197,8 +227,8 @@ function accessToMetro(origin, places, buses, startSec, fareFn, limit = 3) {
   return [...best.values()].sort((a, b) => a.arrSec - b.arrSec).slice(0, limit);
 }
 
-/** Mirror image: from a metro station to the destination. */
-function egressFromMetro(dest, places, buses, fareFn, limit = 3) {
+/** Mirror image: from a metro station to the destination, up to two buses. */
+function egressFromMetro(dest, places, buses, fareFn, limit = 4) {
   const out = [];
 
   nearestStations(toPoint(dest), MAX_WALK_M, 3).forEach(({ station, m }) => {
@@ -209,24 +239,55 @@ function egressFromMetro(dest, places, buses, fareFn, limit = 3) {
   });
 
   if (dest.kind === 'bus') {
-    (buses || []).forEach((bus) => {
-      const toIdx = stopIndex(bus, dest.name);
-      if (toIdx < 0) return;
-      for (let i = toIdx - 1; i >= 0; i--) {
-        const near = nearestStations(toPoint(bus.stops[i]), STOP_TO_STATION_M, 1)[0];
-        if (!near) continue;
-        out.push({ stationId: near.station.id, m: near.m, build: (t) => {
-          const legs = [];
-          let now = t;
-          if (near.m > 40) {
-            const place = places.find((p) => p.id === `metro:${near.station.id}`);
-            const w = walkLeg(place, bus.stops[i], now);
-            legs.push(w); now = w.arrSec;
+    (buses || []).forEach((b2) => {
+      const d2 = stopIndex(b2, dest.name);
+      if (d2 < 0) return;
+
+      const scanFrom = Math.max(0, d2 - MAX_STOPS_TO_SCAN);
+      for (let j = d2 - 1; j >= 0; j--) {
+        const near = nearestStations(toPoint(b2.stops[j]), STOP_TO_STATION_M, 1)[0];
+        if (near) {
+          out.push({ stationId: near.station.id, m: near.m, build: (t) => {
+            const legs = [];
+            let now = t;
+            if (near.m > 40) {
+              const place = places.find((p) => p.id === `metro:${near.station.id}`);
+              const w = walkLeg(place, b2.stops[j], now);
+              legs.push(w); now = w.arrSec;
+            }
+            legs.push(busLeg(b2, j, d2, now, fareFn));
+            return legs;
+          } });
+          break; // this bus takes you the rest of the way, don't look further back
+        }
+
+        // See if an earlier bus feeds into b2 at this stop, from near a station.
+        if (j >= scanFrom) {
+          const midName = b2.stops[j].name;
+          for (const b1 of buses) {
+            if (b1.id === b2.id) continue;
+            const i = stopIndex(b1, midName);
+            if (i < 0) continue;
+            for (let h = i - 1; h >= 0; h--) {
+              const near2 = nearestStations(toPoint(b1.stops[h]), STOP_TO_STATION_M, 1)[0];
+              if (!near2) continue;
+              out.push({ stationId: near2.station.id, m: near2.m, build: (t) => {
+                const legs = [];
+                let now = t;
+                if (near2.m > 40) {
+                  const place = places.find((p) => p.id === `metro:${near2.station.id}`);
+                  const w = walkLeg(place, b1.stops[h], now);
+                  legs.push(w); now = w.arrSec;
+                }
+                const leg1 = busLeg(b1, h, i, now, fareFn);
+                legs.push(leg1);
+                legs.push(busLeg(b2, j, d2, leg1.arrSec + TRANSFER_PENALTY_SEC, fareFn));
+                return legs;
+              } });
+              break;
+            }
           }
-          legs.push(busLeg(bus, i, toIdx, now, fareFn));
-          return legs;
-        } });
-        break;
+        }
       }
     });
   }
@@ -237,6 +298,8 @@ function egressFromMetro(dest, places, buses, fareFn, limit = 3) {
 }
 
 // ------------------------------------------------------------- assemble
+const LONG_WAIT_SEC = 25 * 60; // beyond this, the wait needs explaining, not hiding
+
 function finish(legs, startSec, label) {
   if (!legs.length) return null;
   const depSec = legs[0].depSec;
@@ -257,6 +320,13 @@ function finish(legs, startSec, label) {
   // 0 = empty, 1 = packed; the worst leg drives the score
   const crowdScore = Math.max(...rides.map((l) => l.crowd?.score ?? 0.5));
 
+  // A wait this long almost always means a service hasn't started yet rather
+  // than genuine slack — flag it so the UI can say so instead of quietly
+  // folding six hours into "406 min".
+  const worstWait = Math.max(0, ...rides.map((l) => l.waitSec || 0));
+  const longWait = worstWait > LONG_WAIT_SEC;
+  const longWaitLeg = longWait ? rides.find((l) => (l.waitSec || 0) === worstWait) : null;
+
   return {
     id: `${label}-${rides.map((l) => l.busId || l.line).join('-')}-${depSec}`,
     label,
@@ -272,7 +342,9 @@ function finish(legs, startSec, label) {
     crowdScore,
     crowdLevel: crowdScore >= 0.85 ? 'High' : crowdScore >= 0.6 ? 'Medium-High' : crowdScore >= 0.35 ? 'Medium' : 'Low',
     co2SavedKg: Math.max(0, (km * CO2.car - grams) / 1000),
-    modes: [...new Set(legs.map((l) => l.kind))]
+    modes: [...new Set(legs.map((l) => l.kind))],
+    longWait,
+    longWaitKind: longWaitLeg?.kind || null
   };
 }
 
