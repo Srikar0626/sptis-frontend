@@ -423,7 +423,11 @@ export default function ChatBot({ lang = 'en', buses = [], onOpenJourney = null 
                   )}
 
                   {m.journeys?.map((j, k) => (
-                    <JourneyCard key={k} journey={j} onOpen={onOpenJourney ? () => onOpenJourney(m.journeyFrom, m.journeyTo) : null} />
+                    <JourneyCard
+                      key={k}
+                      journey={j}
+                      onOpen={onOpenJourney ? () => { onOpenJourney(m.journeyFrom, m.journeyTo); setOpen(false); } : null}
+                    />
                   ))}
 
                   {m.busRows && (
