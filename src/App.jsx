@@ -1614,7 +1614,7 @@ export default function App() {
   const navItems = [
     { view: 'dashboard', Icon: Home, label: t('home') },
     { view: 'planner', Icon: Search, label: t('planner') },
-    { view: 'journey', Icon: Train, label: t('bus_metro') },
+    { view: 'journey', Icon: Train, label: t('multi_planner') },
     { view: 'routes', Icon: List, label: t('routes_dir') },
     { view: 'schedule', Icon: CalendarDays, label: t('route_schedule') },
   ];
@@ -1757,10 +1757,10 @@ export default function App() {
         )}
 
         {/* PLANNER / MULTI-LEG BANNER */}
-        {(appView === 'planner' || appView === 'multi_leg') && (
+        {(appView === 'planner' || appView === 'multi_leg' || appView === 'journey') && (
           <section className="bg-gradient-to-br from-[#0a3660] to-[#0f4c81] text-white">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{appView === 'multi_leg' ? t('multi_planner') : t('planner')}</h1>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{appView === 'planner' ? t('planner') : t('multi_planner')}</h1>
               <p className="mt-2 text-sm sm:text-base text-blue-100">
                 {t('tracking_info').replace('{b}', buses.length).replace('{s}', allStops.length)}
               </p>

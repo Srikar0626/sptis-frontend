@@ -28,8 +28,7 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder }) {
 
   const matches = useMemo(() => {
     const q = text.trim().toLowerCase();
-    const pool = q ? places.filter((p) => p.name.toLowerCase().includes(q)) : places;
-    return pool.slice(0, 8);
+    return q ? places.filter((p) => p.name.toLowerCase().includes(q)) : places;
   }, [text, places]);
 
   return (
@@ -204,9 +203,9 @@ export default function MultiModalPlanner({
     <div className="space-y-5">
       <div className="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-200 relative">
         <div className="flex items-center gap-2 mb-5">
-          <h2 className="text-lg font-black text-slate-800 tracking-tight">Plan a journey</h2>
+          <h2 className="text-lg font-black text-slate-800 tracking-tight">Multi-Leg Planner</h2>
           <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg">
-            Bus + Metro
+            Walk + Bus + Metro
           </span>
         </div>
 
@@ -338,16 +337,8 @@ export default function MultiModalPlanner({
 
             {open && (
               <div className="px-5 pb-5 pt-1 border-t border-slate-100 space-y-4">
-                <LegDetails journey={j} />
+                <LegDetails journey={j} onOpenBus={onOpenBus} />
                 <JourneyMap journey={j} />
-                {onOpenBus && j.legs.some((l) => l.kind === 'bus') && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onOpenBus(j.legs.find((l) => l.kind === 'bus').busId); }}
-                    className="w-full py-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-sm font-black text-slate-700 transition"
-                  >
-                    Track this bus live
-                  </button>
-                )}
               </div>
             )}
           </div>

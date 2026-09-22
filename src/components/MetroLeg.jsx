@@ -64,8 +64,9 @@ export function CrowdBadge({ level, estimated = false }) {
   );
 }
 
-/** Vertical step-by-step view of one journey. */
-export function LegDetails({ journey }) {
+/** Vertical step-by-step view of one journey. Pass onOpenBus to get a small
+ * "Track live" button on each individual bus leg, right where it's relevant. */
+export function LegDetails({ journey, onOpenBus = null }) {
   return (
     <ol className="space-y-3">
       {journey.legs.map((leg, i) => (
@@ -101,11 +102,21 @@ export function LegDetails({ journey }) {
               </p>
             )}
             {leg.kind === 'bus' && (
-              <p className="text-[11px] font-medium text-slate-500 mt-0.5">
-                {leg.stops} stop{leg.stops === 1 ? '' : 's'} · bus {leg.busId}
-                {leg.waitSec > 0 && ` · arrives in ${Math.round(leg.waitSec / 60)} min`}
-                {leg.crowd && ` · ${leg.crowd.occupied}/${leg.crowd.seats} seats taken`}
-              </p>
+              <div className="flex items-center justify-between gap-2 mt-0.5">
+                <p className="text-[11px] font-medium text-slate-500">
+                  {leg.stops} stop{leg.stops === 1 ? '' : 's'} · bus {leg.busId}
+                  {leg.waitSec > 0 && ` · arrives in ${Math.round(leg.waitSec / 60)} min`}
+                  {leg.crowd && ` · ${leg.crowd.occupied}/${leg.crowd.seats} seats taken`}
+                </p>
+                {onOpenBus && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onOpenBus(leg.busId); }}
+                    className="flex-shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-[#0f4c81] bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition"
+                  >
+                    <Bus className="w-3 h-3" /> Track live
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </li>
