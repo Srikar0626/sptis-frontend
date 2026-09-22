@@ -18,6 +18,7 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder, boundar
   const [open, setOpen] = useState(false);
   const [text, setText] = useState(value || '');
   const [maxHeight, setMaxHeight] = useState(256); // fallback ~ max-h-64
+  const [direction, setDirection] = useState('down'); // 'down' | 'up'
   const box = useRef(null);
 
   useEffect(() => { setText(value || ''); }, [value]);
@@ -27,23 +28,36 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder, boundar
     return () => document.removeEventListener('mousedown', away);
   }, []);
 
-  // Cap the dropdown to the real space between the input and whatever sits
-  // below it (the Find routes button), so it always renders fully on top of
-  // that element instead of being painted over by it. Recomputed whenever
-  // the dropdown opens and on resize/scroll while it's open, since the gap
-  // is layout-dependent (mobile stacks the fields, desktop doesn't).
+  // Decide where the dropdown actually has room. Opening downward and
+  // merely capping the height still let the list sit on top of the Find
+  // routes button whenever the real gap was tiny (a few px of margin) —
+  // capping to a "floor" just meant it overlapped the button instead of
+  // shrinking honestly. So instead: measure the live space below the input
+  // (down to the button) and above it (up to the viewport top). If there
+  // isn't enough room below, open upward over the input's own label instead
+  // — that space is never occupied by the button. Recomputed whenever the
+  // dropdown opens and on resize/scroll while it's open.
   useLayoutEffect(() => {
     if (!open) return undefined;
-    const GAP = 12; // breathing room above the boundary
+    const GAP = 10; // breathing room around the boundary
+    const DESIRED = 190; // ~3 rows before it's worth flipping direction
     const FLOOR = 80; // never shrink so much the list becomes unusable
+    const CEILING = 320;
     const compute = () => {
       if (!box.current) return;
-      const inputBottom = box.current.getBoundingClientRect().bottom;
+      const rect = box.current.getBoundingClientRect();
       const boundaryTop = boundaryRef?.current
         ? boundaryRef.current.getBoundingClientRect().top
         : window.innerHeight;
-      const available = boundaryTop - inputBottom - GAP;
-      setMaxHeight(Math.max(available, FLOOR));
+      const spaceBelow = Math.min(boundaryTop, window.innerHeight) - rect.bottom - GAP;
+      const spaceAbove = rect.top - GAP;
+      if (spaceBelow < DESIRED && spaceAbove > spaceBelow) {
+        setDirection('up');
+        setMaxHeight(Math.min(Math.max(spaceAbove, FLOOR), CEILING));
+      } else {
+        setDirection('down');
+        setMaxHeight(Math.min(Math.max(spaceBelow, FLOOR), CEILING));
+      }
     };
     compute();
     window.addEventListener('resize', compute);
@@ -73,14 +87,17 @@ function PlaceInput({ label, value, onChange, places, icon, placeholder, boundar
       />
       {open && matches.length > 0 && (
         <ul
-          className="absolute z-30 mt-2 w-full overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl"
-          style={{ maxHeight }}
+          className={`absolute z-30 left-0 w-full overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl ${
+            direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+          }`}
+          style={{ maxHeight, backgroundColor: '#ffffff' }}
         >
           {matches.map((p) => (
             <li
               key={p.id}
               onClick={() => { onChange(p.name); setText(p.name); setOpen(false); }}
-              className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between gap-2"
+              className="bg-white px-4 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between gap-2"
+              style={{ backgroundColor: '#ffffff' }}
             >
               <span className="text-sm font-bold text-slate-700 truncate">
                 {p.name}
