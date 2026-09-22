@@ -2432,7 +2432,7 @@ export default function App() {
       </nav>
 
       {/* AI ASSISTANT (floating on desktop, full screen sheet on phones) */}
-      <ChatBot lang={lang} />
+      <ChatBot lang={lang} buses={buses} onOpenJourney={openInJourneyPlanner} />
     </div>
   );
 }

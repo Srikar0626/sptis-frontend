@@ -6,7 +6,7 @@ import {
 import {
   loadMetro, getMetro, secToHHMM, METRO_LINE_STYLE
 } from '../lib/metro';
-import { buildPlaces, placeOptions, planJourneys, sortJourneys, SORT_MODES } from '../lib/routing';
+import { buildPlaces, placeOptions, resolvePlace, planJourneys, sortJourneys, SORT_MODES } from '../lib/routing';
 import { LegStrip, LegDetails, CrowdBadge } from './MetroLeg';
 
 const SORT_ICON = { fastest: Zap, cheapest: Coins, fewest: RouteIcon, least_crowded: Users };
@@ -171,6 +171,7 @@ export default function MultiModalPlanner({
   const [results, setResults] = useState(null);
   const [openIdx, setOpenIdx] = useState(0);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null); // { missing, suggestions } | { crashed: true } | null
 
   useEffect(() => { loadMetro().then(() => setReady(true)).catch(() => setReady(false)); }, []);
 
@@ -179,11 +180,40 @@ export default function MultiModalPlanner({
 
   const run = (f = from, t = to, when = date) => {
     if (!f || !t || f === t) return;
+    setSearchError(null);
+
+    // Resolve names to real stops/stations up front. planJourneys() does
+    // this silently and just returns [] on a miss, which used to look
+    // exactly like "nothing happened" when a typed name didn't match
+    // anything (e.g. a spelling the dataset doesn't use).
+    const origin = resolvePlace(places, f);
+    const dest = resolvePlace(places, t);
+    if (!origin || !dest) {
+      const missing = !origin ? f : t;
+      const q = missing.trim().toLowerCase();
+      const suggestions = q
+        ? places.filter((p) => p.name.toLowerCase().includes(q.slice(0, Math.min(4, q.length)))).slice(0, 6)
+        : [];
+      setResults(null);
+      setSearchError({ missing, suggestions });
+      return;
+    }
+
     setSearching(true);
     setTimeout(() => {
-      setResults(planJourneys({ buses, from: f, to: t, busFare, places, date: when }));
-      setOpenIdx(0);
-      setSearching(false);
+      // A thrown error in here used to leave `searching` stuck true
+      // forever, which permanently disabled the Find routes button for
+      // every search after that — not just this one.
+      try {
+        setResults(planJourneys({ buses, from: origin, to: dest, busFare, places, date: when }));
+        setOpenIdx(0);
+      } catch (err) {
+        console.error('Journey search failed:', err);
+        setResults([]);
+        setSearchError({ crashed: true });
+      } finally {
+        setSearching(false);
+      }
     }, 10);
   };
 
@@ -213,7 +243,7 @@ export default function MultiModalPlanner({
 
         <div className="flex flex-col sm:flex-row gap-3 sm:items-end mb-5">
           <PlaceInput
-            label="From" value={from} onChange={setFrom} places={options}
+            label="From" value={from} onChange={(v) => { setFrom(v); setSearchError(null); }} places={options}
             placeholder="Stop or metro station"
             icon={<MapPin className="w-3 h-3 text-slate-400" />}
           />
@@ -225,7 +255,7 @@ export default function MultiModalPlanner({
             <ArrowDownUp className="w-4 h-4" />
           </button>
           <PlaceInput
-            label="To" value={to} onChange={setTo} places={options}
+            label="To" value={to} onChange={(v) => { setTo(v); setSearchError(null); }} places={options}
             placeholder="Stop or metro station"
             icon={<MapPinOff className="w-3 h-3 text-slate-400" />}
           />
@@ -277,6 +307,44 @@ export default function MultiModalPlanner({
           <p className="text-sm font-medium text-slate-500 mt-2 max-w-md mx-auto">
             Nothing connects these two points right now. Try a nearby hub such as Ameerpet, MG Bus Station or Secunderabad.
           </p>
+        </div>
+      )}
+
+      {searchError && !searchError.crashed && (
+        <div className="p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-black text-amber-800">
+                We don't recognise &ldquo;{searchError.missing}&rdquo; as a stop or metro station
+              </h3>
+              <p className="text-xs font-medium text-amber-700 mt-1">Did you mean one of these?</p>
+            </div>
+          </div>
+          {searchError.suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {searchError.suggestions.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    if (searchError.missing === from) setFrom(p.name);
+                    else setTo(p.name);
+                    setSearchError(null);
+                  }}
+                  className="text-xs font-black px-3 py-2 rounded-xl bg-white border-2 border-amber-200 text-amber-800 hover:border-amber-400 transition"
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {searchError?.crashed && (
+        <div className="p-6 bg-rose-50 border-2 border-rose-200 rounded-3xl text-sm font-bold text-rose-700 flex items-center gap-3">
+          <ShieldAlert className="h-6 w-6 flex-shrink-0" />
+          Something went wrong planning that route. Please try again, or try a different stop.
         </div>
       )}
 
